@@ -9,13 +9,10 @@ DECLARE_COMPONENT(k4SimDelphesAlg)
 // todo: remove
 using namespace k4SimDelphes;
 
-k4SimDelphesAlg::k4SimDelphesAlg(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc) {
+k4SimDelphesAlg::k4SimDelphesAlg(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc), m_eventDataSvc("EventDataSvc", "k4SimDelphesAlg") {
   declareProperty("GenParticles", 
                   m_InputMCParticles,
                   "(Input) Collection of generated particles");
-  declareProperty("RecParticlesDelphes", 
-                  m_OutputRecParticles,
-                  "(Output) Collection of reconstructed particles as outputed by Delphes");
 }
 
 StatusCode k4SimDelphesAlg::initialize() {
@@ -36,6 +33,11 @@ StatusCode k4SimDelphesAlg::initialize() {
   m_partonOutputArray = m_Delphes->ExportArray("partons");
   m_Delphes->InitTask();
   m_Delphes->Clear();
+
+  // data service
+  m_eventDataSvc.retrieve();
+  m_podioDataSvc = dynamic_cast<PodioDataSvc*>( m_eventDataSvc.get());
+
   return StatusCode::SUCCESS;
 }
 
@@ -65,12 +67,12 @@ StatusCode k4SimDelphesAlg::execute() {
 
   auto collections = m_edm4hepConverter->getCollections();
   for (auto& c: collections) {
-    if (c.first == "ReconstructedParticles") {
-      m_OutputRecParticles.put(static_cast<edm4hep::ReconstructedParticleCollection*>(c.second));
-    }
+    DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
+    wrapper->setData(c.second);
+    m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper);
   }
   m_Delphes->Clear();
-  delete m_edm4hepConverter;
+  //delete m_edm4hepConverter;
   return StatusCode::SUCCESS;
 }
 
