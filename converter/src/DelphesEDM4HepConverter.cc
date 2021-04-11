@@ -591,4 +591,27 @@ void setMotherDaughterRelations(GenParticle const* delphesCand,
   }
 }
 
+edm4hep::MCRecoParticleAssociationCollection* DelphesEDM4HepConverter::createExternalRecoAssociations(std::unordered_map<UInt_t, edm4hep::ConstMCParticle> mc_map) {
+
+  auto mcRecoRelations = new edm4hep::MCRecoParticleAssociationCollection();
+    for (auto genID: mc_map):
+    const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(genId.second);
+    for (auto it = recoBegin; it != recoEnd; ++it) {
+      // Handling slightly different member names for delphes depending on
+      // whether we are still working with Candidates or the actual output
+      // classes already
+      if constexpr(std::is_same_v<DelphesT, Candidate>) {
+        if (equalP4(getP4(it->second), delphesCand->Momentum)) {
+          return it->second;
+
+      auto relation = mcRecoRelations->create();
+      relation.setSim( ... );
+      relation.setRec( ...);
+    }
+
+
+
+}
+
+
 } // namespace k4SimDelphes

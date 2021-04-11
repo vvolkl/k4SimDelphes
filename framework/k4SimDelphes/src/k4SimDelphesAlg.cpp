@@ -38,6 +38,7 @@ StatusCode k4SimDelphesAlg::initialize() {
   m_eventDataSvc.retrieve();
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>( m_eventDataSvc.get());
 
+
   return StatusCode::SUCCESS;
 }
 
@@ -62,8 +63,6 @@ StatusCode k4SimDelphesAlg::execute() {
   m_Delphes->ProcessTask();
   ///-- conversion of the output --/////////////////////////////////////////////
   m_edm4hepConverter->process(m_converterTree);
-  // setup output collections
-  edm4hep::ReconstructedParticleCollection* recparticles = new edm4hep::ReconstructedParticleCollection();
 
   auto collections = m_edm4hepConverter->getCollections();
   for (auto& c: collections) {
@@ -72,7 +71,7 @@ StatusCode k4SimDelphesAlg::execute() {
     m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper);
   }
   m_Delphes->Clear();
-  //delete m_edm4hepConverter;
+  delete m_edm4hepConverter;
   return StatusCode::SUCCESS;
 }
 

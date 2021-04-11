@@ -91,6 +91,9 @@ public:
     fillReferenceCollection<Electron>(delphesCollection, branch, "electron");
   }
 
+  /// allow creating associations to an external MCParticleCollection
+  edm4hep::MCRecoParticleAssociationCollection* createExternalRecoAssociations(std::unordered_map<UInt_t, edm4hep::ConstMCParticle> mc_map);
+
 private:
 
   template<typename DelphesT>
